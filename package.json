@@ -1,0 +1,54 @@
+{
+  "name": "node-red-contrib-lirc",
+  "version": "0.4.0",
+  "description": "Lirc node for node-red, allows to send date to the LIRC",
+  "main": "lirc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/estbeetoo/node-red-contrib-lirc.git"
+  },
+  "keywords": [
+    "node-red",
+    "ir",
+    "infrared",
+    "infrared remote",
+    "ccf",
+    "lirc"
+  ],
+  "node-red": {
+    "nodes": {
+      "lirc": "lirc.js"
+    }
+  },
+  "author": {
+    "name": "Alexander Borovsky",
+    "email": "aborovsky@beetoo.me",
+    "url": "http://beetoo.me"
+  },
+  "license": "Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)",
+  "bugs": {
+    "url": "https://github.com/estbeetoo/node-red-contrib-lirc/issues"
+  },
+  "homepage": "https://github.com/estbeetoo/node-red-contrib-lirc#readme",
+  "contributors": [
+    {
+      "name": "Alexander Borovsky"
+    },
+    {
+      "name": "Yury Kornilov"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "aborovsky",
+      "email": "aborovsky@beetoo.me"
+    },
+    {
+      "name": "ykornilov",
+      "email": "ykornilov@beetoo.me"
+    }
+  ]
+}
