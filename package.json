@@ -23,6 +23,9 @@
       "lirc": "lirc.js"
     }
   },
+  "dependencies": {
+    "lirc_node": "0.0.1"
+  },
   "author": {
     "name": "Alexander Borovsky",
     "email": "aborovsky@beetoo.me",
