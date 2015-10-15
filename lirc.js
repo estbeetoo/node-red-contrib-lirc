@@ -2,49 +2,65 @@
  * Created by aborovsky on 27.08.2015.
  */
 
-var util = require('util'),
-    iTach = require('lirc').iTach;
+var util = require('util');
+var lircManager = require('./lib/lircmanager').LircManager;
 
 module.exports = function(RED) {
 
     /**
      * ====== Lirc-controller ================
-     * Holds configuration for lircjs host+port,
+     * Holds configuration for lircjs,
      * initializes new lircjs connections
      * =======================================
      */
     function LIRCControllerNode(config) {
-        RED.nodes.createNode(this, config);
-        this.name = config.name;
-        this.host = config.host;
-        this.port = config.port;
-        this.lircjsconn = null;
         var node = this;
-        //node.log("new LIRCControllerNode, config: %j", config);
+        RED.nodes.createNode(this, config);
+        node.name = config.name;
+        node.devices = [];
+        node.lirc = new lircManager();
 
-        /**
-         * Initialize an lircjs socket, calling the handler function
-         * when successfully connected, passing it the lircjs connection
-         */
-        this.initializeLIRCConnection = function(handler) {
-            if (node.lircjsconn) {
-                node.log('already configured to Lirc device at ' + config.host + ':' + config.port + ' in mode[' + config.mode + ']');
-                if (handler && (typeof handler === 'function'))
-                    handler(node.lircjsconn);
-                return node.lircjsconn;
+        this._updateStatusDevices = function(){
+            for (var key in node.devices){
+                var dev = node.devices[key];
+                if (dev.output == node.lirc.activeOutput && node.lirc.isReady){
+                    dev.status({
+                        fill: "green",
+                        shape: "dot",
+                        text: "active"
+                    });
+                } else if (node.lirc.isReady) {
+                    dev.status({
+                        fill: "yellow",
+                        shape: "dot",
+                        text: "inactive"
+                    });
+                } else {
+                    dev.status({
+                        fill: "red",
+                        shape: "dot",
+                        text: "not ready"
+                    });
+                }
             }
-            node.log('configuring to Lirc device at ' + config.host + ':' + config.port + ' in mode[' + config.mode + ']');
-            node.lircjsconn = null;
-            //TODO: implement it!
-            node.lircjsconn = null;
-            node.log('LIRC: successfully connected to ' + config.host + ':' + config.port + ' in mode[' + config.mode + ']');
-            if (handler && (typeof handler === 'function'))
-                handler(node.lircjsconn);
-            return node.lircjsconn;
         };
+
+        node.lirc.on('changeOutput', node._updateStatusDevices);
+        node.lirc.on('ready', node._updateStatusDevices);
+        node.lirc.on('notReady', node._updateStatusDevices);
+
+        this.registerDevice = function(deviceNode){
+            node.devices.push(deviceNode);
+        };
+
+        this.send = function(device, cmd, output, cb){
+            node.log('sending to lirc: ' + device + '/' + cmd);
+            node.lirc.send(device, cmd, output, cb);
+        };
+
         this.on("close", function() {
-            node.log('disconnecting from lircjs server at ' + config.host + ':' + config.port + ' in mode[' + config.mode + ']');
-            node.lircjsconn && node.lircjsconn.disconnect && node.lircjsconn.disconnect();
+            node.log('disconnecting from lirc');
+            node.lirc.end && node.lirc.end();
         });
     }
 
@@ -57,12 +73,15 @@ module.exports = function(RED) {
      * =======================================
      */
     function LIRCOut(config) {
-        RED.nodes.createNode(this, config);
-        this.name = config.name;
-        this.ctrl = RED.nodes.getNode(config.controller);
         var node = this;
-        //node.log('new Lirc-out, config: ' + util.inspect(config));
-        //
+        RED.nodes.createNode(this, config);
+        node.name = config.name;
+        node.ctrl = RED.nodes.getNode(config.controller);
+        node.device = config.device;
+        node.output = config.output;
+
+        node.ctrl && node.ctrl.registerDevice(node);
+
         this.on("input", function(msg) {
             node.log('lircout.onInput msg[' + util.inspect(msg) + ']');
             if (!(msg && msg.hasOwnProperty('payload'))) return;
@@ -81,7 +100,7 @@ module.exports = function(RED) {
                 return;
             }
 
-            node.send(payload, function(err) {
+            node.ctrl.send(node.device, payload, node.output, function(err) {
                 if (err) {
                     node.error('send error: ' + err);
                 }
@@ -91,67 +110,15 @@ module.exports = function(RED) {
 
         });
         this.on("close", function() {
-            node.log('lircOut.close');
+            node.log('lircOut [' + node.name +'] close');
         });
 
         node.status({
-            fill: "yellow",
+            fill: "red",
             shape: "dot",
-            text: "inactive"
+            text: "not ready"
         });
-
-        function nodeStatusConnected() {
-            node.status({
-                fill: "green",
-                shape: "dot",
-                text: "connected"
-            });
-        }
-
-        function nodeStatusDisconnected() {
-            node.status({
-                fill: "red",
-                shape: "dot",
-                text: "disconnected"
-            });
-        }
-
-        function nodeStatusConnecting() {
-            node.status({
-                fill: "green",
-                shape: "ring",
-                text: "connecting"
-            });
-        }
-
-        this.send = function(data, callback) {
-            // init a new one-off connection from the effectively singleton LIRCController
-            // there seems to be no way to reuse the outgoing conn in adreek/node-lircjs
-            this.ctrl.initializeLIRCConnection(function(connection) {
-                if (connection.connected)
-                    nodeStatusConnected();
-                else
-                    nodeStatusDisconnected();
-                connection.removeListener('connecting', nodeStatusConnecting);
-                connection.on('connecting', nodeStatusConnecting);
-                connection.removeListener('connected', nodeStatusConnected);
-                connection.on('connected', nodeStatusConnected);
-                connection.removeListener('disconnected', nodeStatusDisconnected);
-                connection.on('disconnected', nodeStatusDisconnected);
-
-                try {
-                    node.log("send:  " + JSON.stringify(data));
-                    //TODO: implement it!
-                    // connection.send(data, function (err) {
-                    //     callback && callback(err);
-                    // });
-                } catch (err) {
-                    node.error('error calling send: ' + err);
-                    callback(err);
-                }
-            });
-        }
     }
 
     RED.nodes.registerType("lirc-out", LIRCOut);
-}
+};

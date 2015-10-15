@@ -15,20 +15,12 @@
         <input type="text" id="node-input-controller">
     </div>
     <div class="form-row">
-        <label for="node-input-unit_number"><i class="icon-bookmark"></i> Unit number</label>
-        <input type="text" id="node-input-unit_number">
+        <label for="node-input-device"><i class="icon-bookmark"></i> Device name</label>
+        <input type="text" id="node-input-device">
     </div>
     <div class="form-row">
         <label for="node-input-output"><i class="icon-bookmark"></i> Output</label>
         <input type="text" id="node-input-output">
-    </div>
-    <div class="form-row">
-        <label for="node-input-lirccommand"><i class="icon-bookmark"></i> Command</label>
-        <select id="node-input-lirccommand">
-            <option value="empty">no cmd</option>
-            <option value="sendir">infrared</option>
-            <option value="setstate">relay</option>
-        </select>
     </div>
 </script>
 
@@ -53,7 +45,7 @@
             name: {value: ""}
         },
         label: function () {
-            return (this.name || 'lirc' ) + "@" + this.host + ":" + this.port;
+            return (this.name || 'lirc-controller' );
         }
     });
 </script>
@@ -64,14 +56,16 @@
         color: '#26b050',
         defaults: {
             name: {value: ""},
-            controller: {value: "", type: "lirc-controller"}
+            controller: {value: "", type: "lirc-controller"},
+            device: {value: "", required: true},
+            output: {value: "", required: true, validate: RED.validators.number()}
         },
         inputs: 1,
         outputs: 0,
         align: 'right',
         icon: "bridge-dash.png",
         label: function () {
-            return (this.name || "lirc");
+            return (this.name || this.device || "lirc");
         }
     });
 </script>
