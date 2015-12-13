@@ -15,8 +15,6 @@ It will include two nodes:
 -- payload contains:
 
 --- string data - REQUIRED
-
-**Right now it not tested in all directions, working with IP2CC and WF2IR.**
  
 # Usage
 
