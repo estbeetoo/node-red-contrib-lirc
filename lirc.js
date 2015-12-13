@@ -97,7 +97,7 @@ module.exports = function(RED) {
                     payload = msg.payload.toString();
                 }
             }
-            if (payload == null) {
+            if (payload == null || payload.trim().length == 0) {
                 node.warn(node.name + ': lircout.onInput: illegal msg.payload!');
                 return;
             }
