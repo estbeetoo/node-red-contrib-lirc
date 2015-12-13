@@ -54,7 +54,8 @@ module.exports = function(RED) {
         };
 
         this.send = function(device, cmd, output, cb){
-            node.log('sending to lirc: ' + device + '/' + cmd);
+            RED.comms.publish("debug", {name: node.name, msg: 'sending to lirc: irsend SEND_ONCE ' + device + ' ' + cmd});
+            //node.log('sending to lirc: ' + device + '/' + cmd);
             node.lirc.send(device, cmd, output, cb);
         };
 
@@ -83,7 +84,8 @@ module.exports = function(RED) {
         node.ctrl && node.ctrl.registerDevice(node);
 
         this.on("input", function(msg) {
-            node.log('lircout.onInput msg[' + util.inspect(msg) + ']');
+            RED.comms.publish("debug", {name: node.name, msg: 'lircout.onInput msg[' + util.inspect(msg) + ']'});
+            //node.log('lircout.onInput msg[' + util.inspect(msg) + ']');
             if (!(msg && msg.hasOwnProperty('payload'))) return;
             var payload = msg.payload;
             if (typeof(msg.payload) === "object") {
@@ -96,13 +98,13 @@ module.exports = function(RED) {
                 }
             }
             if (payload == null) {
-                node.log('lircout.onInput: illegal msg.payload!');
+                node.warn(node.name + ': lircout.onInput: illegal msg.payload!');
                 return;
             }
 
             node.ctrl.send(node.device, payload, node.output, function(err) {
                 if (err) {
-                    node.error('send error: ' + err);
+                    node.error(node.name + ': send error: ' + err);
                 }
                 if (typeof(msg.cb) === 'function')
                     msg.cb(err);

@@ -16,21 +16,30 @@
     </div>
     <div class="form-row">
         <label for="node-input-device"><i class="icon-bookmark"></i> Device name</label>
-        <input type="text" id="node-input-device">
+        <input type="text" id="node-input-device" placeholder="philips">
     </div>
     <div class="form-row">
         <label for="node-input-output"><i class="icon-bookmark"></i> Output</label>
-        <input type="text" id="node-input-output">
+        <input type="text" id="node-input-output" placeholder="1">
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="lirc-out">
     <p>
-        Use this to <b>send</b> ir codes to the LIRC.<br/>
-        <b>msg.payload</b> must be a JavaScript object or a string
+        Use this to <b>send</b> commands via an lirc daemon connected to a Lirc device.<br/>
+    	<b>msg.payload</b> must be contain the name of the command
     </p>
     <p>
-        For example: <code>TODO</code> or <code>TODO</code>
+        For example: <code>KEY_POWER</code>
+    </p>
+    <br/>
+    <p>
+        For example, let configs be:
+        <ul>
+        	<li><code>Name</code> is <code>TV</code> - the name of the node</li>
+        	<li><code>Device name</code> is <code>philips</code> - the device name in the file lircd.conf</li>
+        	<li><code>Output</code> is <code>1</code> - the number of the transmitter for lirc - may be not supported</li>
+        </ul>
     </p>
 </script>
 
