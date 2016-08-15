@@ -31,7 +31,7 @@
     "email": "aborovsky@beetoo.me",
     "url": "http://beetoo.me"
   },
-  "license": "Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)",
+  "license": "CC-BY-NC-SA-4.0",
   "bugs": {
     "url": "https://github.com/estbeetoo/node-red-contrib-lirc/issues"
   },
